@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplo IMDB</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchPeliculas();
+
+            document.getElementById('agregarPeliculaForm').addEventListener('submit', function(evento) {
+                evento.preventDefault();
+                const titulo = document.getElementById('titulo').value;
+                const año = document.getElementById('año').value;
+                const genero = document.getElementById('genero').value;
+
+                fetch('/peliculas/agregar/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ titulo, año, genero })
+                }).then(respuesta => {
+                    if (respuesta.status === 201) {
+                        fetchPeliculas();
+                    }
+                });
+            });
+
+            function fetchPeliculas() {
+                fetch('/peliculas/')
+                    .then(respuesta => respuesta.json())
+                    .then(peliculas => {
+                        const peliculasDiv = document.getElementById('peliculas');
+                        peliculasDiv.innerHTML = '';
+                        peliculas.forEach(pelicula => {
+                            const peliculaDiv = document.createElement('div');
+                            peliculaDiv.textContent = `${pelicula.titulo} (${pelicula.año}) - ${pelicula.genero}`;
+                            peliculasDiv.appendChild(peliculaDiv);
+                        });
+                    });
+            }
+
+            function getCookie(nombre) {
+                let valorCookie = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, nombre.length + 1) === (nombre + '=')) {
+                            valorCookie = decodeURIComponent(cookie.substring(nombre.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return valorCookie;
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>Películas en IMDB</h1>
+    <div id="peliculas"></div>
+
+    <h2>Agregar una Nueva Película</h2>
+    <form id="agregarPeliculaForm">
+        <input type="text" id="titulo" placeholder="Título" required>
+        <input type="number" id="año" placeholder="Año" required>
+        <input type="text" id="genero" placeholder="Género" required>
+        <button type="submit">Agregar Película</button>
+    </form>
+</body>
+</html>
