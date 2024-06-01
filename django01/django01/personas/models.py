@@ -1,5 +1,7 @@
 from django.db import models
 
 # Create your models here.
-python manage.py makemigrations
-python manage.py migrate
+class Persona(models.Model):
+    nombre = models.TextField()
+    apellidos = models.TextField()
+    edad = models.TextField()
